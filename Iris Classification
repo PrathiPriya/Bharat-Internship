@@ -1,0 +1,364 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+import warnings
+warnings.filterwarnings('ignore')
+
+
+plt.style.use("fivethirtyeight")
+%matplotlib inline
+[13]
+df = pd.read_csv(r"C:\Users\Prathiksha\Downloads\Iris.csv")
+df.head()
+
+[14]
+df.info()
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 150 entries, 0 to 149
+Data columns (total 6 columns):
+ #   Column         Non-Null Count  Dtype  
+---  ------         --------------  -----  
+ 0   Id             150 non-null    int64  
+ 1   SepalLengthCm  150 non-null    float64
+ 2   SepalWidthCm   150 non-null    float64
+ 3   PetalLengthCm  150 non-null    float64
+ 4   PetalWidthCm   150 non-null    float64
+ 5   Species        150 non-null    object 
+dtypes: float64(4), int64(1), object(1)
+memory usage: 7.2+ KB
+
+[15]
+df.describe()
+
+[16]
+df.shape
+(150, 6)
+[17]
+df.drop('Id',axis=1,inplace=True)
+df.head()
+
+[18]
+df['Species'].value_counts()
+Iris-setosa        50
+Iris-versicolor    50
+Iris-virginica     50
+Name: Species, dtype: int64
+[19]
+df.isnull().sum()
+SepalLengthCm    0
+SepalWidthCm     0
+PetalLengthCm    0
+PetalWidthCm     0
+Species          0
+dtype: int64
+[22]
+df.drop_duplicates(inplace=True)
+[23]
+plt.figure(figsize=(15,8))
+sns.boxplot(x='Species',y='SepalLengthCm',data=df.sort_values('SepalLengthCm',ascending=False))
+<AxesSubplot:xlabel='Species', ylabel='SepalLengthCm'>
+
+[24]
+df.plot(kind='scatter',x='SepalWidthCm',y='SepalLengthCm')
+<AxesSubplot:xlabel='SepalWidthCm', ylabel='SepalLengthCm'>
+
+[25]
+sns.jointplot(x="SepalLengthCm", y="SepalWidthCm", data=df, size=5)
+<seaborn.axisgrid.JointGrid at 0x27b72f08bb0>
+
+[26]
+sns.pairplot(df, hue="Species", size=3)
+<seaborn.axisgrid.PairGrid at 0x27b73031f70>
+
+[27]
+df.boxplot(by="Species", figsize=(12, 6))
+array([[<AxesSubplot:title={'center':'PetalLengthCm'}, xlabel='[Species]'>,
+        <AxesSubplot:title={'center':'PetalWidthCm'}, xlabel='[Species]'>],
+       [<AxesSubplot:title={'center':'SepalLengthCm'}, xlabel='[Species]'>,
+        <AxesSubplot:title={'center':'SepalWidthCm'}, xlabel='[Species]'>]],
+      dtype=object)
+
+[28]
+import pandas.plotting
+from pandas.plotting import andrews_curves
+andrews_curves(df, "Species")
+<AxesSubplot:>
+
+[29]
+plt.figure(figsize=(15,15))
+sns.catplot(x='Species',y='SepalWidthCm',data=df.sort_values('SepalWidthCm',ascending=False),kind='boxen')
+<seaborn.axisgrid.FacetGrid at 0x27b72e4e100>
+<Figure size 1080x1080 with 0 Axes>
+
+[30]
+plt.figure(figsize=(15,10))
+plt.subplot(2,2,1)
+sns.violinplot(x='Species',y='PetalLengthCm',data=df)
+plt.subplot(2,2,2)
+sns.violinplot(x='Species',y='PetalWidthCm',data=df)
+plt.subplot(2,2,3)
+sns.violinplot(x='Species',y='SepalLengthCm',data=df)
+plt.subplot(2,2,4)
+sns.violinplot(x='Species',y='SepalWidthCm',data=df)
+<AxesSubplot:xlabel='Species', ylabel='SepalWidthCm'>
+
+[31]
+X=df.drop('Species',axis=1)
+y=df['Species']
+[32]
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.utils import to_categorical
+[33]
+df['Species'] = pd.Categorical(df.Species)
+df['Species'] = df.Species.cat.codes
+# Turn response variable into one-hot response vectory = to_categorical(df.response)
+y = to_categorical(df.Species)
+[34]
+from sklearn.model_selection import train_test_split
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.30,stratify=y,random_state=123)
+[35]
+model=Sequential()
+model.add(Dense(100,activation='relu',input_shape=(4,)))
+
+model.add(Dense(3,activation='softmax'))
+[36]
+model.compile(optimizer='adam',loss='categorical_crossentropy',metrics=['accuracy'])
+[37]
+history=model.fit(X_train,y_train,epochs=45,validation_data=(X_test, y_test))
+Epoch 1/45
+4/4 [==============================] - 1s 115ms/step - loss: 1.7278 - accuracy: 0.3235 - val_loss: 1.4876 - val_accuracy: 0.3556
+Epoch 2/45
+4/4 [==============================] - 0s 13ms/step - loss: 1.4089 - accuracy: 0.4118 - val_loss: 1.2496 - val_accuracy: 0.6667
+Epoch 3/45
+4/4 [==============================] - 0s 23ms/step - loss: 1.2000 - accuracy: 0.6667 - val_loss: 1.0585 - val_accuracy: 0.6667
+Epoch 4/45
+4/4 [==============================] - 0s 12ms/step - loss: 1.0224 - accuracy: 0.6667 - val_loss: 0.9146 - val_accuracy: 0.6667
+Epoch 5/45
+4/4 [==============================] - 0s 11ms/step - loss: 0.8963 - accuracy: 0.6667 - val_loss: 0.8422 - val_accuracy: 0.7111
+Epoch 6/45
+4/4 [==============================] - 0s 10ms/step - loss: 0.8434 - accuracy: 0.7549 - val_loss: 0.8105 - val_accuracy: 0.6889
+Epoch 7/45
+4/4 [==============================] - 0s 10ms/step - loss: 0.8130 - accuracy: 0.6765 - val_loss: 0.7885 - val_accuracy: 0.6667
+Epoch 8/45
+4/4 [==============================] - 0s 11ms/step - loss: 0.7897 - accuracy: 0.6765 - val_loss: 0.7656 - val_accuracy: 0.6889
+Epoch 9/45
+4/4 [==============================] - 0s 10ms/step - loss: 0.7689 - accuracy: 0.6765 - val_loss: 0.7454 - val_accuracy: 0.6667
+Epoch 10/45
+4/4 [==============================] - 0s 12ms/step - loss: 0.7489 - accuracy: 0.6765 - val_loss: 0.7241 - val_accuracy: 0.6889
+Epoch 11/45
+4/4 [==============================] - 0s 12ms/step - loss: 0.7250 - accuracy: 0.7157 - val_loss: 0.7048 - val_accuracy: 0.8222
+Epoch 12/45
+4/4 [==============================] - 0s 11ms/step - loss: 0.7084 - accuracy: 0.8529 - val_loss: 0.6899 - val_accuracy: 0.8000
+Epoch 13/45
+4/4 [==============================] - 0s 13ms/step - loss: 0.6933 - accuracy: 0.8235 - val_loss: 0.6799 - val_accuracy: 0.6889
+Epoch 14/45
+4/4 [==============================] - 0s 12ms/step - loss: 0.6826 - accuracy: 0.7451 - val_loss: 0.6592 - val_accuracy: 0.7778
+Epoch 15/45
+4/4 [==============================] - 0s 11ms/step - loss: 0.6609 - accuracy: 0.8039 - val_loss: 0.6395 - val_accuracy: 0.8667
+Epoch 16/45
+4/4 [==============================] - 0s 10ms/step - loss: 0.6428 - accuracy: 0.8627 - val_loss: 0.6260 - val_accuracy: 0.6667
+Epoch 17/45
+4/4 [==============================] - 0s 10ms/step - loss: 0.6356 - accuracy: 0.6765 - val_loss: 0.6197 - val_accuracy: 0.6667
+Epoch 18/45
+4/4 [==============================] - 0s 13ms/step - loss: 0.6256 - accuracy: 0.6667 - val_loss: 0.6054 - val_accuracy: 0.6667
+Epoch 19/45
+4/4 [==============================] - 0s 11ms/step - loss: 0.6082 - accuracy: 0.6667 - val_loss: 0.5880 - val_accuracy: 0.8000
+Epoch 20/45
+4/4 [==============================] - 0s 8ms/step - loss: 0.5924 - accuracy: 0.8431 - val_loss: 0.5785 - val_accuracy: 0.9111
+Epoch 21/45
+4/4 [==============================] - 0s 9ms/step - loss: 0.5832 - accuracy: 0.9216 - val_loss: 0.5689 - val_accuracy: 0.9111
+Epoch 22/45
+4/4 [==============================] - 0s 11ms/step - loss: 0.5698 - accuracy: 0.9118 - val_loss: 0.5564 - val_accuracy: 0.8444
+Epoch 23/45
+4/4 [==============================] - 0s 10ms/step - loss: 0.5601 - accuracy: 0.8137 - val_loss: 0.5472 - val_accuracy: 0.7778
+Epoch 24/45
+4/4 [==============================] - 0s 9ms/step - loss: 0.5505 - accuracy: 0.8039 - val_loss: 0.5381 - val_accuracy: 0.7556
+Epoch 25/45
+4/4 [==============================] - 0s 8ms/step - loss: 0.5407 - accuracy: 0.8039 - val_loss: 0.5288 - val_accuracy: 0.7778
+Epoch 26/45
+4/4 [==============================] - 0s 8ms/step - loss: 0.5307 - accuracy: 0.8137 - val_loss: 0.5189 - val_accuracy: 0.8222
+Epoch 27/45
+4/4 [==============================] - 0s 10ms/step - loss: 0.5213 - accuracy: 0.8627 - val_loss: 0.5097 - val_accuracy: 0.8444
+Epoch 28/45
+4/4 [==============================] - 0s 12ms/step - loss: 0.5116 - accuracy: 0.8627 - val_loss: 0.5019 - val_accuracy: 0.8444
+Epoch 29/45
+4/4 [==============================] - 0s 22ms/step - loss: 0.5018 - accuracy: 0.8922 - val_loss: 0.4939 - val_accuracy: 0.8889
+Epoch 30/45
+4/4 [==============================] - 0s 9ms/step - loss: 0.4933 - accuracy: 0.9118 - val_loss: 0.4873 - val_accuracy: 0.9778
+Epoch 31/45
+4/4 [==============================] - 0s 11ms/step - loss: 0.4857 - accuracy: 0.9412 - val_loss: 0.4816 - val_accuracy: 0.9556
+Epoch 32/45
+4/4 [==============================] - 0s 11ms/step - loss: 0.4794 - accuracy: 0.9608 - val_loss: 0.4775 - val_accuracy: 0.9556
+Epoch 33/45
+4/4 [==============================] - 0s 10ms/step - loss: 0.4741 - accuracy: 0.9216 - val_loss: 0.4691 - val_accuracy: 0.9333
+Epoch 34/45
+4/4 [==============================] - 0s 10ms/step - loss: 0.4686 - accuracy: 0.9412 - val_loss: 0.4602 - val_accuracy: 0.9778
+Epoch 35/45
+4/4 [==============================] - 0s 11ms/step - loss: 0.4572 - accuracy: 0.9608 - val_loss: 0.4561 - val_accuracy: 0.9556
+Epoch 36/45
+4/4 [==============================] - 0s 11ms/step - loss: 0.4511 - accuracy: 0.9608 - val_loss: 0.4485 - val_accuracy: 0.9778
+Epoch 37/45
+4/4 [==============================] - 0s 11ms/step - loss: 0.4433 - accuracy: 0.9412 - val_loss: 0.4426 - val_accuracy: 0.8889
+Epoch 38/45
+4/4 [==============================] - 0s 11ms/step - loss: 0.4387 - accuracy: 0.9118 - val_loss: 0.4391 - val_accuracy: 0.8222
+Epoch 39/45
+4/4 [==============================] - 0s 10ms/step - loss: 0.4342 - accuracy: 0.8824 - val_loss: 0.4327 - val_accuracy: 0.8222
+Epoch 40/45
+4/4 [==============================] - 0s 10ms/step - loss: 0.4269 - accuracy: 0.9118 - val_loss: 0.4259 - val_accuracy: 0.9333
+Epoch 41/45
+4/4 [==============================] - 0s 9ms/step - loss: 0.4187 - accuracy: 0.9510 - val_loss: 0.4215 - val_accuracy: 0.9778
+Epoch 42/45
+4/4 [==============================] - 0s 9ms/step - loss: 0.4150 - accuracy: 0.9608 - val_loss: 0.4172 - val_accuracy: 0.9556
+Epoch 43/45
+4/4 [==============================] - 0s 10ms/step - loss: 0.4096 - accuracy: 0.9608 - val_loss: 0.4116 - val_accuracy: 0.9778
+Epoch 44/45
+4/4 [==============================] - 0s 10ms/step - loss: 0.4029 - accuracy: 0.9608 - val_loss: 0.4060 - val_accuracy: 0.9556
+Epoch 45/45
+4/4 [==============================] - 0s 8ms/step - loss: 0.3996 - accuracy: 0.9412 - val_loss: 0.4016 - val_accuracy: 0.9333
+
+[38]
+model.evaluate(X_test,y_test)
+2/2 [==============================] - 0s 2ms/step - loss: 0.4016 - accuracy: 0.9333
+
+[0.40157437324523926, 0.9333333373069763]
+[39]
+pred = model.predict(X_test[:10])
+print(pred)
+1/1 [==============================] - 0s 77ms/step
+[[0.00693189 0.3320591  0.6610091 ]
+ [0.00723197 0.30660725 0.6861608 ]
+ [0.06838606 0.5649481  0.36666584]
+ [0.04906575 0.50309896 0.44783524]
+ [0.9194689  0.0599864  0.02054469]
+ [0.04393928 0.5483901  0.40767068]
+ [0.00647665 0.26600468 0.7275187 ]
+ [0.00725313 0.28378507 0.7089618 ]
+ [0.91873205 0.06141962 0.01984833]
+ [0.01235352 0.41441658 0.57322997]]
+
+[40]
+p=np.argmax(pred,axis=1)
+print(p)
+print(y_test[:10])
+[2 2 1 1 0 1 2 2 0 2]
+[[0. 0. 1.]
+ [0. 0. 1.]
+ [0. 1. 0.]
+ [0. 1. 0.]
+ [1. 0. 0.]
+ [0. 1. 0.]
+ [0. 0. 1.]
+ [0. 0. 1.]
+ [1. 0. 0.]
+ [0. 0. 1.]]
+
+[41]
+history.history['accuracy']
+[0.3235294222831726,
+ 0.4117647111415863,
+ 0.6666666865348816,
+ 0.6666666865348816,
+ 0.6666666865348816,
+ 0.7549019455909729,
+ 0.6764705777168274,
+ 0.6764705777168274,
+ 0.6764705777168274,
+ 0.6764705777168274,
+ 0.7156862616539001,
+ 0.8529411554336548,
+ 0.8235294222831726,
+ 0.7450980544090271,
+ 0.8039215803146362,
+ 0.8627451062202454,
+ 0.6764705777168274,
+ 0.6666666865348816,
+ 0.6666666865348816,
+ 0.843137264251709,
+ 0.9215686321258545,
+ 0.9117646813392639,
+ 0.813725471496582,
+ 0.8039215803146362,
+ 0.8039215803146362,
+ 0.813725471496582,
+ 0.8627451062202454,
+ 0.8627451062202454,
+ 0.8921568393707275,
+ 0.9117646813392639,
+ 0.9411764740943909,
+ 0.9607843160629272,
+ 0.9215686321258545,
+ 0.9411764740943909,
+ 0.9607843160629272,
+ 0.9607843160629272,
+ 0.9411764740943909,
+ 0.9117646813392639,
+ 0.8823529481887817,
+ 0.9117646813392639,
+ 0.9509803652763367,
+ 0.9607843160629272,
+ 0.9607843160629272,
+ 0.9607843160629272,
+ 0.9411764740943909]
+[42]
+history.history['val_accuracy']
+[0.35555556416511536,
+ 0.6666666865348816,
+ 0.6666666865348816,
+ 0.6666666865348816,
+ 0.7111111283302307,
+ 0.6888889074325562,
+ 0.6666666865348816,
+ 0.6888889074325562,
+ 0.6666666865348816,
+ 0.6888889074325562,
+ 0.8222222328186035,
+ 0.800000011920929,
+ 0.6888889074325562,
+ 0.7777777910232544,
+ 0.8666666746139526,
+ 0.6666666865348816,
+ 0.6666666865348816,
+ 0.6666666865348816,
+ 0.800000011920929,
+ 0.9111111164093018,
+ 0.9111111164093018,
+ 0.8444444537162781,
+ 0.7777777910232544,
+ 0.7555555701255798,
+ 0.7777777910232544,
+ 0.8222222328186035,
+ 0.8444444537162781,
+ 0.8444444537162781,
+ 0.8888888955116272,
+ 0.9777777791023254,
+ 0.9555555582046509,
+ 0.9555555582046509,
+ 0.9333333373069763,
+ 0.9777777791023254,
+ 0.9555555582046509,
+ 0.9777777791023254,
+ 0.8888888955116272,
+ 0.8222222328186035,
+ 0.8222222328186035,
+ 0.9333333373069763,
+ 0.9777777791023254,
+ 0.9555555582046509,
+ 0.9777777791023254,
+ 0.9555555582046509,
+ 0.9333333373069763]
+[43]
+plt.figure()
+
+
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+
+plt.title('Model accuracy')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Test'])
+plt.show()
